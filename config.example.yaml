@@ -1,0 +1,72 @@
+# Public example profile. Put private business rules in config.local.yaml.
+company_type:
+  manufacturer: 20
+  service_provider: 20
+  contractor: 15
+  technology_company: 20
+  importer_exporter: 15
+  retailer: 10
+  testing_company: 30
+  transformer_manufacturer: 25
+  utility_contractor: 20
+  distributor: 15
+  engineering_consultant: 10
+
+signals:
+  business_relevance: 20
+  purchase_intent: 25
+  business_scale: 10
+  technical_capability: 10
+  distributor_or_partner: 15
+  contactability: 10
+  decision_maker_signal: 10
+  high_voltage_testing: 20
+  relay_testing: 15
+  transformer_testing: 15
+  transformer_manufacturing: 10
+  utility_clients: 10
+  technical_team: 10
+  distributor: 15
+
+penalties:
+  competitor_signal: -100
+  unrelated_signal: -100
+
+thresholds:
+  A: 70
+  B: 45
+  C: 20
+  D: 0
+
+# Market profiles override signal weights for the selected UI mode.
+# The same company facts can therefore be evaluated differently for
+# international sales or a general B2B workflow. The legacy domestic profile
+# is retained below for older local configurations.
+profiles:
+  international:
+    signals:
+      business_relevance: 20
+      international_business: 20
+      purchase_intent: 20
+      distributor: 15
+      business_scale: 10
+      contactability: 10
+
+  domestic:
+    signals:
+      domestic_business: 20
+      purchase_intent: 25
+      business_scale: 15
+      utility_clients: 15
+      technical_team: 10
+      decision_maker_signal: 10
+
+  general:
+    signals:
+      business_relevance: 20
+      purchase_intent: 20
+      business_scale: 10
+      technical_capability: 10
+      distributor_or_partner: 10
+      contactability: 10
+      decision_maker_signal: 10
