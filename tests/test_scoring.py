@@ -7,15 +7,15 @@ from leadscout.scoring import score_lead
 
 def test_mock_testing_lead_gets_rule_based_score():
     lead = LeadInput(
-        company_name="ABC Testing",
+        company_name="ABC Services",
         country="Kenya",
-        source_text="Testing company. We provide high voltage testing and relay testing services.",
+        source_text="Service provider. We are reviewing procurement needs.",
     )
     analysis = mock_analysis(lead)
     verification = verify_evidence(analysis, lead)
     score = score_lead(analysis, DEFAULT_CONFIG, verification)
 
-    assert score.total == 65
+    assert score.total == 45
     assert score.grade == "B"
     assert score.review_required is True
     assert score.evidence_coverage == 100

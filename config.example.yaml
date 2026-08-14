@@ -6,9 +6,6 @@ company_type:
   technology_company: 20
   importer_exporter: 15
   retailer: 10
-  testing_company: 30
-  transformer_manufacturer: 25
-  utility_contractor: 20
   distributor: 15
   engineering_consultant: 10
 
@@ -20,13 +17,10 @@ signals:
   distributor_or_partner: 15
   contactability: 10
   decision_maker_signal: 10
-  high_voltage_testing: 20
-  relay_testing: 15
-  transformer_testing: 15
-  transformer_manufacturing: 10
-  utility_clients: 10
-  technical_team: 10
-  distributor: 15
+
+# Industry-specific legacy fields are accepted for old reports, but are not
+# scored by the default general B2B profile. Add explicit weights in a private
+# config.local.yaml only when you intentionally want an industry profile.
 
 penalties:
   competitor_signal: -100
@@ -57,8 +51,6 @@ profiles:
       domestic_business: 20
       purchase_intent: 25
       business_scale: 15
-      utility_clients: 15
-      technical_team: 10
       decision_maker_signal: 10
 
   general:

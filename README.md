@@ -1,7 +1,7 @@
 # LeadScout AI
 
 LeadScout AI is an early-stage open-source, general-purpose B2B lead analysis
-assistant. V0.2 accepts one manually entered lead, extracts general company
+assistant. V0.2.1 accepts one manually entered lead, extracts general company
 facts and evidence with an optional LLM, and calculates a deterministic
 rule-based score.
 
@@ -13,12 +13,13 @@ rule-based score.
 - Streamlit local web UI with a light custom theme
 - Mock mode without an API key
 - OpenAI-compatible live analysis
+- Provider connection test that sends no customer data
 - Evidence verification against supplied text
 - Rule-based A/B/C/D scoring
 - General B2B and international B2B profiles
 - JSON report download
 
-V0.2 does not crawl websites, log in to Facebook or LinkedIn, discover emails,
+V0.2.1 does not crawl websites, log in to Facebook or LinkedIn, discover emails,
 process CSV files, store a database, or provide user accounts.
 
 ## Run on Windows
@@ -39,6 +40,10 @@ The browser opens a local page, normally `http://localhost:8501`.
 
 Mock mode is enabled by default and does not call an AI provider. Enter a
 company name and sample public text, then press **开始分析**.
+
+The mock path is the recommended first run because it needs no API key and
+does not make network requests. A neutral example is available at
+[`examples/sample-lead.json`](examples/sample-lead.json).
 
 ## Market modes
 
@@ -65,19 +70,30 @@ providers that do not support OpenAI-style structured parsing.
 
 The API key is never included in the downloaded report.
 
+Use **测试模型连接** after enabling live mode to check the selected model,
+Base URL, and key. The connection test sends only a minimal confirmation
+request; it does not send the company name, notes, or source text.
+
 ## Private scoring rules
 
 The public `config.example.yaml` is a neutral example profile. Copy it to
 `config.local.yaml` for private weights or exclusions. That file is ignored by
 Git and should not contain customer lists in a public checkout. Use
 `profiles.international` or `profiles.general` for profile-specific overrides.
-The legacy `profiles.domestic` section remains supported for older local files.
+The legacy industry-specific fields remain accepted for old reports and local
+configs, but they have no default weight in the general B2B profile. Add their
+weights explicitly in a private profile only when you intentionally need them.
 
 ## Test
 
 ```powershell
 python -m pytest -q
 ```
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the expected test, privacy, and
+pull request checks. Please use synthetic or public examples only.
 
 ## Privacy and limitations
 

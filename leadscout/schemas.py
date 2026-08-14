@@ -39,7 +39,7 @@ class DataSufficiency(str, Enum):
 
 
 class LeadInput(BaseModel):
-    """The information sent to an LLM in V0.2."""
+    """The information sent to an LLM in V0.2.1."""
 
     company_name: str = Field(min_length=1, max_length=200)
     country: str = Field(default="", max_length=120)

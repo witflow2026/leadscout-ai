@@ -5,7 +5,7 @@ from __future__ import annotations
 from .market import MARKET_GUIDANCE, normalize_market
 from .schemas import LeadInput
 
-PROMPT_VERSION = "v0.2.0"
+PROMPT_VERSION = "v0.2.1"
 
 SYSTEM_PROMPT = (
     "You extract B2B lead facts from user-supplied text.\n\n"

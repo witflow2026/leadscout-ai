@@ -21,7 +21,7 @@ def build_report(
 ) -> dict[str, Any]:
     selected_market = normalize_market(market)
     return {
-        "schema_version": "0.2.0",
+        "schema_version": "0.2.1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "market": selected_market,
         "market_label": MARKET_LABELS[selected_market],

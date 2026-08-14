@@ -13,5 +13,10 @@ or multi-user isolation.
 
 ## Reporting
 
-For a security issue, open a private report to the repository maintainer when
-that channel is available. Do not publish active credentials in an issue.
+For a security issue, use GitHub's private vulnerability reporting for this
+repository when available, or contact the maintainer privately through the
+GitHub profile. Do not publish active credentials, customer data, or exploit
+details in a public issue.
+
+When reporting, include the affected version, reproduction steps using
+synthetic data, impact, and a suggested mitigation if known.

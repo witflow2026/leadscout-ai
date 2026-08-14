@@ -18,6 +18,14 @@ def test_market_profiles_have_different_weights():
     assert general["signals"]["purchase_intent"] == 20
 
 
+def test_general_profile_does_not_score_legacy_industry_fields():
+    general = load_config(market="general")
+
+    assert "high_voltage_testing" not in general["signals"]
+    assert "transformer_testing" not in general["signals"]
+    assert "testing_company" not in general["company_type"]
+
+
 def test_domestic_mode_scores_domestic_signals():
     lead = LeadInput(
         company_name="Domestic Utility Testing Group",

@@ -1,4 +1,4 @@
-"""Streamlit entry point for LeadScout AI V0.2."""
+"""Streamlit entry point for LeadScout AI V0.2.1."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 from leadscout.config import load_config
 from leadscout.evidence import verify_evidence
-from leadscout.llm import LLMError, LLMSettings, analyze_lead
+from leadscout.llm import LLMError, LLMSettings, analyze_lead, check_connection
 from leadscout.market import MARKET_LABELS, MARKET_UI_OPTIONS
 from leadscout.report import build_report
 from leadscout.schemas import LeadInput
@@ -20,7 +20,7 @@ from leadscout.scoring import score_lead
 
 load_dotenv()
 
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.2.1"
 MAX_TEXT_LENGTH = 12_000
 
 st.set_page_config(page_title="LeadScout AI", page_icon=":material/ads_click:", layout="wide")
@@ -389,7 +389,7 @@ def _display_report(report: dict) -> None:
 
 
 st.markdown(
-    '<div class="ls-hero"><div class="ls-brand-row"><div class="ls-mark" aria-hidden="true"></div><div><div class="ls-eyebrow">企业客户分析工具 · 版本 0.2</div><div class="ls-brand-title">LeadScout AI</div></div></div><div class="ls-hero-copy"><p>把公开资料整理成可复核的客户判断，帮助你更快决定“先联系谁、为什么联系、下一步问什么”。</p><div class="ls-trust-row"><span class="ls-trust-chip"><span class="ls-status-dot"></span>证据优先</span><span class="ls-trust-chip">规则评分</span><span class="ls-trust-chip">本地会话</span></div></div></div>',
+    f'<div class="ls-hero"><div class="ls-brand-row"><div class="ls-mark" aria-hidden="true"></div><div><div class="ls-eyebrow">企业客户分析工具 · 版本 {APP_VERSION}</div><div class="ls-brand-title">LeadScout AI</div></div></div><div class="ls-hero-copy"><p>把公开资料整理成可复核的客户判断，帮助你更快决定“先联系谁、为什么联系、下一步问什么”。</p><div class="ls-trust-row"><span class="ls-trust-chip"><span class="ls-status-dot"></span>证据优先</span><span class="ls-trust-chip">规则评分</span><span class="ls-trust-chip">本地会话</span></div></div></div>',
     unsafe_allow_html=True,
 )
 
@@ -459,7 +459,36 @@ with st.sidebar:
         index=0,
         help="自动判断会优先尝试结构化输出，失败时再尝试 JSON 数据格式。",
     )
-    st.markdown('<div class="ls-sidebar-note"><strong>隐私提示</strong><br>版本 0.2 不会自动访问官网，也不会登录或抓取社交平台。接口密钥（API Key）只在当前本地会话使用。</div>', unsafe_allow_html=True)
+    connection_test_requested = st.button(
+        "测试模型连接",
+        use_container_width=True,
+        help="只发送最小测试请求，不会发送客户名称、备注或公开资料。",
+    )
+    st.caption("测试连接只验证模型、接口地址和 API Key 是否可用。")
+    st.markdown(
+        f'<div class="ls-sidebar-note"><strong>隐私提示</strong><br>版本 {APP_VERSION} 不会自动访问官网，也不会登录或抓取社交平台。接口密钥（API Key）只在当前本地会话使用。</div>',
+        unsafe_allow_html=True,
+    )
+
+if connection_test_requested:
+    if not live_mode:
+        st.sidebar.info("当前关闭了在线模型接口；请先打开“调用在线模型接口（API）”。")
+    elif not api_key.strip():
+        st.sidebar.error("请先填写接口密钥（API Key）。")
+    else:
+        connection_settings = LLMSettings(
+            api_key=api_key,
+            model=model,
+            base_url=base_url,
+            mode=mode,
+            market=market,
+        )
+        with st.sidebar:
+            with st.spinner("正在测试模型连接..."):
+                try:
+                    st.success(check_connection(connection_settings))
+                except LLMError as exc:
+                    st.error(str(exc))
 
 config = load_config(_config_path(), market=market)
 
@@ -486,7 +515,7 @@ with st.form("lead_form"):
         source_text = st.text_area(
             "公开资料文本 *",
             height=260,
-            placeholder="粘贴公司简介、关于我们、产品或服务页面的公开内容。版本 0.2 只分析你粘贴的内容。",
+            placeholder=f"粘贴公司简介、关于我们、产品或服务页面的公开内容。版本 {APP_VERSION} 只分析你粘贴的内容。",
         )
     st.caption(f"单个文本框上限 {MAX_TEXT_LENGTH:,} 个字符 · 建议优先粘贴公司简介、产品服务或采购相关描述。")
     submitted = st.form_submit_button("开始分析  →", type="primary", width="stretch")

@@ -30,6 +30,13 @@ class LLMSettings:
     market: str = "general"
 
 
+def _validate_settings(settings: LLMSettings) -> None:
+    if not settings.api_key.strip():
+        raise LLMError("在线模型接口（API）模式需要接口密钥（API Key）。")
+    if not settings.model.strip():
+        raise LLMError("在线模型接口（API）模式需要填写模型名称。")
+
+
 def _is_deepseek(settings: LLMSettings) -> bool:
     model = settings.model.strip().casefold()
     base_url = settings.base_url.strip().casefold()
@@ -335,13 +342,38 @@ def _request_json(client, settings: LLMSettings, messages):
     return client.chat.completions.create(**request_kwargs)
 
 
+def check_connection(settings: LLMSettings) -> str:
+    """Check provider reachability without sending any customer information."""
+
+    _validate_settings(settings)
+    client = _client(settings)
+    messages = [
+        {
+            "role": "system",
+            "content": "Return one small JSON object only. Do not include any explanation.",
+        },
+        {"role": "user", "content": "Reply with exactly {\"ok\":true} to confirm connectivity."},
+    ]
+    try:
+        completion = _request_json(client, settings, messages)
+        choices = getattr(completion, "choices", None) or []
+        if not choices:
+            raise LLMError("模型服务已响应，但没有返回可读取的结果。")
+        message = getattr(choices[0], "message", None)
+        content = getattr(message, "content", None) if message is not None else None
+        if not content and getattr(message, "parsed", None) is None:
+            raise LLMError("模型服务已响应，但返回内容为空。")
+        return "连接成功，已收到模型响应；本次测试未发送客户资料。"
+    except Exception as exc:
+        if isinstance(exc, LLMError):
+            raise
+        raise LLMError(_provider_error_message(exc, settings)) from exc
+
+
 def analyze_lead(lead: LeadInput, settings: LLMSettings, mock: bool = False) -> LeadAnalysis:
     if mock:
         return mock_analysis(lead, market=settings.market)
-    if not settings.api_key.strip():
-        raise LLMError("在线模型接口（API）模式需要接口密钥（API Key），或关闭该模式使用本地模拟模式（Mock）。")
-    if not settings.model.strip():
-        raise LLMError("在线模型接口（API）模式需要填写模型名称。")
+    _validate_settings(settings)
 
     client = _client(settings)
     selected_market = normalize_market(settings.market)

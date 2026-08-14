@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 - 2026-08-14
+
+- Generalized the default scoring profile so legacy electrical fields are not
+  scored unless explicitly enabled in a private configuration.
+- Added a model connection test that sends no customer information.
+- Added actionable provider error handling and regression coverage for API-key
+  redaction and missing credentials.
+- Added a neutral example lead, contribution guidance, and a bug report template.
+- Updated the UI, README, and privacy notes to identify the release as 0.2.1.
+
 ## 0.2.0 - 2026-08-14
 
 - Added general B2B and international B2B market modes.
