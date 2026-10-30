@@ -432,26 +432,33 @@ with st.sidebar:
     else:
         model = model_choice
         st.caption(f"当前模型标识：{model_choice}")
-    api_key_default = os.getenv(
-        "DEEPSEEK_API_KEY" if model_choice.startswith("deepseek-") else "OPENAI_API_KEY",
+    is_deepseek = model_choice.startswith("deepseek-") or (model or "").strip().lower().startswith("deepseek-")
+    server_api_key = os.getenv(
+        "DEEPSEEK_API_KEY" if is_deepseek else "OPENAI_API_KEY",
         "",
+    ).strip()
+    server_base_url = os.getenv("OPENAI_BASE_URL", "").strip() or (
+        "https://api.deepseek.com" if is_deepseek else ""
     )
     api_key = st.text_input(
         "接口密钥（API Key）",
-        value=api_key_default,
+        value="",
         type="password",
         autocomplete="new-password",
-        help="API Key 是调用在线模型服务的授权密钥，只在当前本地会话使用，不会写入报告。",
+        help="API Key 是调用在线模型服务的授权密钥，留空则使用服务端配置的密钥（如有），只在当前本地会话使用，不会写入报告。",
     )
-    configured_base_url = os.getenv("OPENAI_BASE_URL", "").strip()
-    base_url_default = configured_base_url or (
-        "https://api.deepseek.com" if model_choice.startswith("deepseek-") else ""
-    )
+    st.caption("留空则使用服务端配置的密钥（如有）。")
     base_url = st.text_input(
         "接口地址（Base URL，可选）",
-        value=base_url_default,
+        value=server_base_url,
         placeholder="官方接口地址可留空",
     )
+    if not api_key.strip() and server_api_key:
+        effective_api_key = server_api_key
+        effective_base_url = server_base_url
+    else:
+        effective_api_key = api_key.strip()
+        effective_base_url = base_url.strip()
     mode = st.selectbox(
         "返回格式",
         options=list(OUTPUT_MODE_LABELS),
@@ -473,13 +480,13 @@ with st.sidebar:
 if connection_test_requested:
     if not live_mode:
         st.sidebar.info("当前关闭了在线模型接口；请先打开“调用在线模型接口（API）”。")
-    elif not api_key.strip():
+    elif not effective_api_key.strip():
         st.sidebar.error("请先填写接口密钥（API Key）。")
     else:
         connection_settings = LLMSettings(
-            api_key=api_key,
+            api_key=effective_api_key,
             model=model,
-            base_url=base_url,
+            base_url=effective_base_url,
             mode=mode,
             market=market,
         )
@@ -527,7 +534,7 @@ if submitted:
         st.error("请至少填写备注或公开资料文本。")
     elif len(notes) > MAX_TEXT_LENGTH or len(source_text) > MAX_TEXT_LENGTH:
         st.error(f"单个文本框不能超过 {MAX_TEXT_LENGTH:,} 个字符。")
-    elif live_mode and not api_key.strip():
+    elif live_mode and not effective_api_key.strip():
         st.error("在线模型接口（API）模式需要填写接口密钥（API Key）；也可以关闭该选项，先使用本地模拟模式（Mock）。")
     else:
         try:
@@ -539,9 +546,9 @@ if submitted:
                 source_text=source_text,
             )
             settings = LLMSettings(
-                api_key=api_key,
+                api_key=effective_api_key,
                 model=model,
-                base_url=base_url,
+                base_url=effective_base_url,
                 mode=mode,
                 market=market,
             )
@@ -554,7 +561,7 @@ if submitted:
                     analysis,
                     score,
                     verifications,
-                    provider="mock" if not live_mode else (base_url or "openai"),
+                    provider="mock" if not live_mode else (effective_base_url or "openai"),
                     model=model,
                     market=market,
                 )
